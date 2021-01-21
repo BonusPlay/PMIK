@@ -17,7 +17,6 @@ LD_SCRIPT = $(SRC_DIR)/device/STM32F429ZITx_FLASH.ld
 
 # Project includes
 INCLUDES   = -I$(INC_DIR)
-INCLUDES  += -I$(INC_DIR)hal/
 
 # Vendor sources
 SRC_FILES += $(VENDOR_ROOT)/Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery.c
@@ -47,7 +46,14 @@ SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_ltdc.
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sdram.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hcd.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fmc.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c
+SRC_FILES += $(VENDOR_ROOT)/Middlewares/Third_Party/FatFS/src/ff_gen_drv.c
+SRC_FILES += $(VENDOR_ROOT)/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c
+SRC_FILES += $(VENDOR_ROOT)/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.c
+SRC_FILES += $(VENDOR_ROOT)/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.c
+SRC_FILES += $(VENDOR_ROOT)/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.c
 
 # Vendor includes
 INCLUDES += -I$(VENDOR_ROOT)/Drivers/CMSIS/Core/Include
@@ -56,12 +62,15 @@ INCLUDES += -I$(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Inc
 INCLUDES += -I$(VENDOR_ROOT)/Drivers/BSP/STM32F429I-Discovery
 INCLUDES += -I$(VENDOR_ROOT)/Drivers/BSP/Components/ili9341
 INCLUDES += -I$(VENDOR_ROOT)/Drivers/BSP/Components/stmpe811
+INCLUDES += -I$(VENDOR_ROOT)/Middlewares/Third_Party/FatFS/src
+INCLUDES += -I$(VENDOR_ROOT)/Middlewares/ST/STM32_USB_Host_Library/Core/Inc
+INCLUDES += -I$(VENDOR_ROOT)/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc
 
 # Compiler Flags
 CFLAGS  = -g -O0 -Wall -Wextra -Warray-bounds
 CFLAGS += -mcpu=cortex-m4 -mthumb -mlittle-endian -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-CFLAGS += -DSTM32F429xx
+CFLAGS += -DUSE_HAL_DRIVER -DUSE_STM32F429I_DISCO -DSTM32F429xx -DUSE_USB_OTG_HS -DUSE_EMBEDDED_PHY
 CFLAGS += $(INCLUDES)
 
 # Linker Flags
