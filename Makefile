@@ -21,6 +21,11 @@ INCLUDES  += -I$(INC_DIR)hal/
 
 # Vendor sources
 SRC_FILES += $(VENDOR_ROOT)/Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery_lcd.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery_ts.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery_sdram.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/BSP/Components/ili9341/ili9341.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/BSP/Components/stmpe811/stmpe811.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c
@@ -49,6 +54,8 @@ INCLUDES += -I$(VENDOR_ROOT)/Drivers/CMSIS/Core/Include
 INCLUDES += -I$(VENDOR_ROOT)/Drivers/CMSIS/Device/ST/STM32F4xx/Include
 INCLUDES += -I$(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Inc
 INCLUDES += -I$(VENDOR_ROOT)/Drivers/BSP/STM32F429I-Discovery
+INCLUDES += -I$(VENDOR_ROOT)/Drivers/BSP/Components/ili9341
+INCLUDES += -I$(VENDOR_ROOT)/Drivers/BSP/Components/stmpe811
 
 # Compiler Flags
 CFLAGS  = -g -O0 -Wall -Wextra -Warray-bounds
