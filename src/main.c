@@ -36,7 +36,7 @@ int main(void)
   HAL_Init();
   SystemClock_Config(); 
 
-  configure_i2c();
+  /* configure_i2c(); */
 
   BSP_LCD_Init();
   BSP_LCD_LayerDefaultInit(1, LCD_FRAME_BUFFER_LAYER1);
@@ -222,7 +222,7 @@ static void SystemClock_Config(void)
 
 static void configure_i2c()
 {
-    I2cHandle.Instance             = I2C3;
+    I2cHandle.Instance             = I2Cx;
 
     I2cHandle.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
     I2cHandle.Init.ClockSpeed      = 400000;
