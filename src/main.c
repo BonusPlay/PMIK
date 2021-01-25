@@ -1,5 +1,8 @@
 #include "main.h"
 
+#define STM32_IC2_ADDR (0x15 << 1)
+#define ESP8266_IC2_ADDR (0x19 << 1)
+
 typedef struct Button {
 	uint8_t xPos;
 	uint8_t yPos;
@@ -18,7 +21,10 @@ static uint8_t needsUpdate = 0;
 static void SystemClock_Config(void);
 static void configure_buttons(void);
 static void get_position(void);
+static void configure_i2c();
+static void error();
 
+extern I2C_HandleTypeDef I2cHandle;
 
 /**
   * @brief  Main program
@@ -27,9 +33,11 @@ static void get_position(void);
   */
 int main(void)
 {
-
   HAL_Init();
   SystemClock_Config(); 
+
+  configure_i2c();
+
   BSP_LCD_Init();
   BSP_LCD_LayerDefaultInit(1, LCD_FRAME_BUFFER_LAYER1);
   BSP_LCD_SelectLayer(1);
@@ -210,4 +218,40 @@ static void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;  
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;  
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+}
+
+static void configure_i2c()
+{
+    I2cHandle.Instance             = I2C3;
+
+    I2cHandle.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
+    I2cHandle.Init.ClockSpeed      = 400000;
+    I2cHandle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    I2cHandle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    I2cHandle.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
+    I2cHandle.Init.OwnAddress1     = STM32_IC2_ADDR;
+
+    if(HAL_I2C_Init(&I2cHandle) != HAL_OK)
+        error();    
+
+    BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);
+
+    while (BSP_PB_GetState(BUTTON_KEY) != 1) {}
+
+    while (BSP_PB_GetState(BUTTON_KEY) != 0) {}
+
+    uint8_t buf[] = "A";
+    if(HAL_I2C_Master_Transmit_IT(&I2cHandle, ESP8266_IC2_ADDR, buf, sizeof(uint8_t))!= HAL_OK)
+      error();
+}
+
+/**
+ * @brief generic error handler, it lights LED4 and ganks execution
+ *
+ */
+static void error()
+{
+    BSP_LED_On(LED4);
+    while(1)
+    {}
 }

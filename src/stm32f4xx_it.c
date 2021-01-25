@@ -1,63 +1,11 @@
-/**
-  ******************************************************************************
-  * @file    Display/LTDC_Paint/Src/stm32f4xx_it.c 
-  * @author  MCD Application Team
-  * @brief   Main Interrupt Service Routines.
-  *          This file provides template for all exceptions handler and 
-  *          peripherals interrupt service routine.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
-  *
-  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
-  * You may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at:
-  *
-  *        http://www.st.com/software_license_agreement_liberty_v2
-  *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  ******************************************************************************
-  */
-
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
 
-/** @addtogroup STM32F4xx_HAL_Applications
-  * @{
-  */
-
-/** @addtogroup LTDC_Paint
-  * @{
-  */ 
-
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 extern HCD_HandleTypeDef hhcd;
+extern I2C_HandleTypeDef I2cHandle;
 
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
-
-/******************************************************************************/
-/*            Cortex-M4 Processor Exceptions Handlers                         */
-/******************************************************************************/
-
-/**
-  * @brief  This function handles NMI exception.
-  * @param  None
-  * @retval None
-  */
 void NMI_Handler(void)
-{
-}
+{}
 
 /**
   * @brief  This function handles Hard Fault exception.
@@ -172,11 +120,24 @@ void OTG_HS_IRQHandler(void)
 }
 
 /**
-  * @}
+  * @brief  This function handles I2C event interrupt request.  
+  * @param  None
+  * @retval None
+  * @Note   This function is redefined in "main.h" and related to I2C data transmission     
   */
+void I2Cx_EV_IRQHandler(void)
+{
+    HAL_I2C_EV_IRQHandler(&I2cHandle);
+}
 
 /**
-  * @}
-  */ 
-
+  * @brief  This function handles I2C error interrupt request.
+  * @param  None
+  * @retval None
+  * @Note   This function is redefined in "main.h" and related to I2C error
+  */
+void I2Cx_ER_IRQHandler(void)
+{
+    HAL_I2C_ER_IRQHandler(&I2cHandle);
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
