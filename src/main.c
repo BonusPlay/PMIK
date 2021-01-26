@@ -13,6 +13,8 @@ typedef struct Button {
 
 static menu_button buttons[3];
 
+static float temperature;
+
 static uint8_t needsUpdate = 0;
 
 static void SystemClock_Config(void);
@@ -20,6 +22,7 @@ static void configure_buttons(void);
 static void get_position(void);
 static void configure_usart();
 static void configure_spi();
+static void configure_adc();
 static void error();
 
 static void broadcast();
@@ -28,6 +31,8 @@ UART_HandleTypeDef UartHandle;
 __IO ITStatus UartReady = RESET;
 
 BMP280_HandleTypedef BmpHandle;
+
+ADC_HandleTypeDef AdcHandle;
 
 /**
   * @brief  Main program
@@ -46,8 +51,9 @@ int main(void)
 
     /* error(); */
 
+    /* configure_adc(); */
     /* configure_usart(); */
-    configure_spi();
+    /* configure_spi(); */
 
     BSP_LCD_Init();
     BSP_LCD_LayerDefaultInit(1, LCD_FRAME_BUFFER_LAYER1);
@@ -268,10 +274,10 @@ static void configure_spi()
 
     while(1)
     {
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
-    HAL_Delay(500);
+        HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
+        HAL_Delay(500);
+        HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
+        HAL_Delay(500);
     }
 
     /*##-1- Configure the SPI peripheral #######################################*/
@@ -391,4 +397,44 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi)
 {
     // pull NSS up
     HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
+{
+    temperature = (((HAL_ADC_GetValue(AdcHandle) / 1024) - 0.5) * 100);
+}
+
+void configure_adc()
+{
+    /* setup adc */
+    AdcHandle.Instance = ADCx;
+ 
+    AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    AdcHandle.Init.Resolution = ADC_RESOLUTION_12B;
+    AdcHandle.Init.ScanConvMode = DISABLE;
+    AdcHandle.Init.ContinuousConvMode = ENABLE;
+    AdcHandle.Init.DiscontinuousConvMode = DISABLE;
+    AdcHandle.Init.NbrOfDiscConversion = 0;
+    AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    AdcHandle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
+    AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    AdcHandle.Init.NbrOfConversion = 1;
+    AdcHandle.Init.DMAContinuousRequests = ENABLE;
+    AdcHandle.Init.EOCSelection = DISABLE;
+
+    if(HAL_ADC_Init(&AdcHandle) != HAL_OK)
+        error();
+
+    /* setup channel */
+    ADC_ChannelConfTypeDef adcChannel;
+
+    adcChannel.Channel = ADCx_CHANNEL;
+    adcChannel.Rank = 1;
+    adcChannel.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+    adcChannel.Offset = 0;
+
+    if (HAL_ADC_ConfigChannel(&AdcHandle, &adcChannel) != HAL_OK)
+        error();
+
+    HAL_ADC_Start_IT(&AdcHandle);
 }

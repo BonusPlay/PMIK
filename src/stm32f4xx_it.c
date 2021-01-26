@@ -4,6 +4,7 @@
 extern HCD_HandleTypeDef hhcd;
 extern UART_HandleTypeDef UartHandle;
 extern BMP280_HandleTypedef BmpHandle;
+extern ADC_HandleTypeDef AdcHandle;
 
 void NMI_Handler(void)
 {}
@@ -141,4 +142,13 @@ void SPIx_IRQHandler(void)
 {
   HAL_SPI_IRQHandler(&BmpHandle.spi);
 }
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+/**
+  * @brief  This function handles ADC interrupt request.  
+  * @param  None
+  * @retval None  
+  */
+void ADC_IRQHandler(void)
+{
+  HAL_ADC_IRQHandler(&AdcHandle);
+}
