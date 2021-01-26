@@ -3,6 +3,7 @@ TARGET_NAME = main
 SRC_DIR = src/
 INC_DIR = include/
 BUILD_DIR = build/
+BMP_ROOT = ./BMP280
 VENDOR_ROOT = ./STM32CubeF4
 
 # Toolchain
@@ -10,6 +11,7 @@ CC = arm-none-eabi-gcc
 DB = arm-none-eabi-gdb
 CP = arm-none-eabi-objcopy
 FL = st-flash
+OD = openocd
 
 # Project sources
 SRC_FILES = $(wildcard $(SRC_DIR)*.c) $(wildcard $(SRC_DIR)*/*.c)
@@ -116,6 +118,10 @@ $(BUILD_DIR):
 clean:
 	rm -f $(ALL_OBJS)
 	rm -rf $(BUILD_DIR)
+
+# openocd
+openocd:
+	$(OD) -f stm32f429-disco.cfg
 
 # Debug
 debug:

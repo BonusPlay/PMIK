@@ -5,10 +5,15 @@
 #include "stm32f429i_discovery_lcd.h"
 #include "stm32f429i_discovery_ts.h"
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"
 #include "usbh_diskio_dma.h"
+
+/* BMP280 */
+#include "bmp280.h"
 
 #define LCD_FRAME_BUFFER_LAYER0                  (LCD_FRAME_BUFFER+0x130000)
 #define LCD_FRAME_BUFFER_LAYER1                  LCD_FRAME_BUFFER
@@ -55,10 +60,14 @@
 #define SPIx_MOSI_PIN                    GPIO_PIN_6
 #define SPIx_MOSI_GPIO_PORT              GPIOE
 #define SPIx_MOSI_AF                     GPIO_AF5_SPI4
+#define SPIx_NSS_PIN                     GPIO_PIN_3
+#define SPIx_NSS_GPIO_PORT               GPIOE
 
 /* Definition for SPIx's NVIC */
 #define SPIx_IRQn                        SPI4_IRQn
 #define SPIx_IRQHandler                  SPI4_IRQHandler
+
+#define DEBUG_BLINK() BSP_LED_On(LED3); HAL_Delay(100); BSP_LED_Off(LED3);
 
 uint16_t Calibration_GetX(uint16_t x);
 uint16_t Calibration_GetY(uint16_t y);

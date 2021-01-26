@@ -3,7 +3,7 @@
 
 extern HCD_HandleTypeDef hhcd;
 extern UART_HandleTypeDef UartHandle;
-extern SPI_HandleTypeDef SpiHandle;
+extern BMP280_HandleTypedef BmpHandle;
 
 void NMI_Handler(void)
 {}
@@ -139,6 +139,6 @@ void USARTx_IRQHandler(void)
   */
 void SPIx_IRQHandler(void)
 {
-  HAL_SPI_IRQHandler(&SpiHandle);
+  HAL_SPI_IRQHandler(&BmpHandle.spi);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

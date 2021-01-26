@@ -27,9 +27,7 @@ static void broadcast();
 UART_HandleTypeDef UartHandle;
 __IO ITStatus UartReady = RESET;
 
-SPI_HandleTypeDef SpiHandle;
-
-#define DEBUG_BLINK() BSP_LED_On(LED3); HAL_Delay(100); BSP_LED_Off(LED3);
+BMP280_HandleTypedef BmpHandle;
 
 /**
   * @brief  Main program
@@ -48,8 +46,8 @@ int main(void)
 
     /* error(); */
 
-    configure_usart();
-    /* configure_spi(); */
+    /* configure_usart(); */
+    configure_spi();
 
     BSP_LCD_Init();
     BSP_LCD_LayerDefaultInit(1, LCD_FRAME_BUFFER_LAYER1);
@@ -261,33 +259,37 @@ static void configure_usart()
 
 static void configure_spi()
 {
+    // configure GPIO for NSS
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin = SPIx_NSS_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(SPIx_NSS_GPIO_PORT, &GPIO_InitStruct);
+
+    while(1)
+    {
+    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
+    HAL_Delay(500);
+    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
+    HAL_Delay(500);
+    }
+
     /*##-1- Configure the SPI peripheral #######################################*/
     /* Set the SPI parameters */
-    SpiHandle.Instance               = SPIx;
-    SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
-    SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
-    SpiHandle.Init.CLKPhase          = SPI_PHASE_1EDGE;
-    SpiHandle.Init.CLKPolarity       = SPI_POLARITY_HIGH;
-    SpiHandle.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
-    SpiHandle.Init.CRCPolynomial     = 7;
-    SpiHandle.Init.DataSize          = SPI_DATASIZE_8BIT;
-    SpiHandle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
-    SpiHandle.Init.NSS               = SPI_NSS_SOFT;
-    SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
-    SpiHandle.Init.Mode = SPI_MODE_MASTER;
+    BmpHandle.spi.Instance               = SPIx;
+    BmpHandle.spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    BmpHandle.spi.Init.Direction         = SPI_DIRECTION_2LINES;
+    BmpHandle.spi.Init.CLKPhase          = SPI_PHASE_1EDGE;
+    BmpHandle.spi.Init.CLKPolarity       = SPI_POLARITY_HIGH;
+    BmpHandle.spi.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
+    BmpHandle.spi.Init.CRCPolynomial     = 7;
+    BmpHandle.spi.Init.DataSize          = SPI_DATASIZE_8BIT;
+    BmpHandle.spi.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+    BmpHandle.spi.Init.NSS               = SPI_NSS_SOFT;
+    BmpHandle.spi.Init.TIMode            = SPI_TIMODE_DISABLE;
+    BmpHandle.spi.Init.Mode = SPI_MODE_MASTER;
 
-    if(HAL_SPI_Init(&SpiHandle) != HAL_OK)
-        error();
-
-    return;
-
-    uint8_t rx_buf[] = "A";
-    uint8_t tx_buf[50];
-
-    /*##-2- Start the Full Duplex Communication process ########################*/  
-    /* While the SPI in TransmitReceive process, user can transmit data through 
-       "aTxBuffer" buffer & receive data through "aRxBuffer" */
-    if(HAL_SPI_TransmitReceive_IT(&SpiHandle, (uint8_t*)rx_buf, (uint8_t *)tx_buf, sizeof(uint8_t)*30) != HAL_OK)
+    if(HAL_SPI_Init(&BmpHandle.spi) != HAL_OK)
         error();
 
     /*##-3- Wait for the end of the transfer ###################################*/  
@@ -297,8 +299,21 @@ static void configure_spi()
         For simplicity reasons, this example is just waiting till the end of the 
         transfer, but application may perform other tasks while transfer operation
         is ongoing. */  
-    while (HAL_SPI_GetState(&SpiHandle) != HAL_SPI_STATE_READY)
+    while (HAL_SPI_GetState(&BmpHandle.spi) != HAL_SPI_STATE_READY)
     {}
+
+    DEBUG_BLINK();
+
+    bmp280_params_t params;
+    bmp280_init_default_params(&params);
+    if (!bmp280_init(&BmpHandle, &params))
+        error();
+
+    DEBUG_BLINK();
+    DEBUG_BLINK();
+    DEBUG_BLINK();
+
+    error();
 }
 
 /**
@@ -331,11 +346,11 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
   *         you can add your own implementation.
   * @retval None
   */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
-{
-    /* Set transmission flag: transfer complete*/
-    UartReady = SET;
-}
+/* void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
+ * {
+ *     [> Set transmission flag: transfer complete<]
+ *     UartReady = SET;
+ * } */
 
 /**
   * @brief  UART error callbacks
@@ -344,10 +359,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
   *         add your own implementation.
   * @retval None
   */
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
-{
-    error();
-}
+/* void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
+ * {
+ *     error();
+ * } */
 
 static void broadcast()
 {
@@ -364,4 +379,16 @@ static void broadcast()
   
     /* Reset transmission flag */
     UartReady = RESET;
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef* hspi)
+{
+    // pull NSS down
+    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi)
+{
+    // pull NSS up
+    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
 }
