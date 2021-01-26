@@ -2,7 +2,8 @@
 #include "stm32f4xx_it.h"
 
 extern HCD_HandleTypeDef hhcd;
-extern I2C_HandleTypeDef I2cHandle;
+extern UART_HandleTypeDef UartHandle;
+extern SPI_HandleTypeDef SpiHandle;
 
 void NMI_Handler(void)
 {}
@@ -120,24 +121,24 @@ void OTG_HS_IRQHandler(void)
 }
 
 /**
-  * @brief  This function handles I2C event interrupt request.  
+  * @brief  This function handles UART interrupt request.  
   * @param  None
   * @retval None
-  * @Note   This function is redefined in "main.h" and related to I2C data transmission     
+  * @Note   This function is redefined in "main.h" and related to DMA stream 
+  *         used for USART data transmission     
   */
-void I2Cx_EV_IRQHandler(void)
+void USARTx_IRQHandler(void)
 {
-    HAL_I2C_EV_IRQHandler(&I2cHandle);
+  HAL_UART_IRQHandler(& UartHandle);
 }
 
 /**
-  * @brief  This function handles I2C error interrupt request.
+  * @brief  This function handles SPI interrupt request.  
   * @param  None
-  * @retval None
-  * @Note   This function is redefined in "main.h" and related to I2C error
+  * @retval None  
   */
-void I2Cx_ER_IRQHandler(void)
+void SPIx_IRQHandler(void)
 {
-    HAL_I2C_ER_IRQHandler(&I2cHandle);
+  HAL_SPI_IRQHandler(&SpiHandle);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

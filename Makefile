@@ -9,6 +9,7 @@ VENDOR_ROOT = ./STM32CubeF4
 CC = arm-none-eabi-gcc
 DB = arm-none-eabi-gdb
 CP = arm-none-eabi-objcopy
+FL = st-flash
 
 # Project sources
 SRC_FILES = $(wildcard $(SRC_DIR)*.c) $(wildcard $(SRC_DIR)*/*.c)
@@ -47,6 +48,7 @@ SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sdram.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hcd.c
+SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fmc.c
 SRC_FILES += $(VENDOR_ROOT)/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c
 SRC_FILES += $(VENDOR_ROOT)/Middlewares/Third_Party/FatFS/src/ff_gen_drv.c
@@ -74,7 +76,7 @@ CFLAGS += -DUSE_HAL_DRIVER -DUSE_STM32F429I_DISCO -DSTM32F429xx -DUSE_USB_OTG_HS
 CFLAGS += $(INCLUDES)
 
 # Linker Flags
-LFLAGS = -Wl,--gc-sections -Wl,-T$(LD_SCRIPT) --specs=rdimon.specs
+LFLAGS = -Wall -Wl,--gc-sections -Wl,-T$(LD_SCRIPT) --specs=rdimon.specs
 
 ###############################################################################
 
@@ -118,3 +120,7 @@ clean:
 # Debug
 debug:
 	$(DB) $(TARGET_ELF)
+
+# Flash
+flash:
+	$(FL) --reset write $(TARGET_BIN) 0x8000000

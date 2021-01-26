@@ -54,6 +54,7 @@ void OTG_FS_IRQHandler(void);
 #else
 void OTG_HS_IRQHandler(void);
 #endif
+void SPIx_IRQHandler(void);
 
 #ifdef __cplusplus
 }

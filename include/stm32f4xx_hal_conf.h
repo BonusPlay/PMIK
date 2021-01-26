@@ -79,8 +79,8 @@
 /* #define HAL_SD_MODULE_ENABLED        */
 #define HAL_SPI_MODULE_ENABLED          
 /* #define HAL_TIM_MODULE_ENABLED       */   
-/* #define HAL_UART_MODULE_ENABLED      */
-/* #define HAL_USART_MODULE_ENABLED     */ 
+#define HAL_UART_MODULE_ENABLED
+/* #define HAL_USART_MODULE_ENABLED */
 /* #define HAL_IRDA_MODULE_ENABLED      */ 
 /* #define HAL_SMARTCARD_MODULE_ENABLED */ 
 /* #define HAL_WWDG_MODULE_ENABLED      */   
@@ -383,9 +383,7 @@
   void assert_failed(uint8_t* file, uint32_t line);
 #else
   #define assert_param(expr) ((void)0U)
-#endif /* USE_FULL_ASSERT */    
-    
-
+#endif /* USE_FULL_ASSERT */
 
 #ifdef __cplusplus
 }

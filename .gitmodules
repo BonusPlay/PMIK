@@ -1,3 +1,6 @@
 [submodule "STM32CubeF4"]
 	path = STM32CubeF4
 	url = https://github.com/STMicroelectronics/STM32CubeF4.git
+[submodule "BMP280"]
+	path = BMP280
+	url = https://github.com/ciastkolog/BMP280_STM32.git
