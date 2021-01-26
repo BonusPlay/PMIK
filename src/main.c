@@ -13,7 +13,9 @@ typedef struct Button {
 
 static menu_button buttons[3];
 
-static float temperature;
+static int32_t temperature;
+static int32_t pressure;
+static int32_t humidity;
 
 static uint8_t needsUpdate = 0;
 
@@ -23,6 +25,7 @@ static void get_position(void);
 static void configure_usart();
 static void configure_spi();
 static void configure_adc();
+static void configure_timer();
 static void error();
 
 static void broadcast();
@@ -33,6 +36,8 @@ __IO ITStatus UartReady = RESET;
 BMP280_HandleTypedef BmpHandle;
 
 ADC_HandleTypeDef AdcHandle;
+
+TIM_HandleTypeDef TimHandle;
 
 /**
   * @brief  Main program
@@ -52,8 +57,9 @@ int main(void)
     /* error(); */
 
     /* configure_adc(); */
-    /* configure_usart(); */
+    configure_usart();
     /* configure_spi(); */
+    /* configure_timer(); */
 
     BSP_LCD_Init();
     BSP_LCD_LayerDefaultInit(1, LCD_FRAME_BUFFER_LAYER1);
@@ -265,21 +271,6 @@ static void configure_usart()
 
 static void configure_spi()
 {
-    // configure GPIO for NSS
-    GPIO_InitTypeDef GPIO_InitStruct;
-    GPIO_InitStruct.Pin = SPIx_NSS_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(SPIx_NSS_GPIO_PORT, &GPIO_InitStruct);
-
-    while(1)
-    {
-        HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
-        HAL_Delay(500);
-        HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
-        HAL_Delay(500);
-    }
-
     /*##-1- Configure the SPI peripheral #######################################*/
     /* Set the SPI parameters */
     BmpHandle.spi.Instance               = SPIx;
@@ -291,9 +282,9 @@ static void configure_spi()
     BmpHandle.spi.Init.CRCPolynomial     = 7;
     BmpHandle.spi.Init.DataSize          = SPI_DATASIZE_8BIT;
     BmpHandle.spi.Init.FirstBit          = SPI_FIRSTBIT_MSB;
-    BmpHandle.spi.Init.NSS               = SPI_NSS_SOFT;
+    BmpHandle.spi.Init.NSS               = SPI_NSS_HARD_OUTPUT;
     BmpHandle.spi.Init.TIMode            = SPI_TIMODE_DISABLE;
-    BmpHandle.spi.Init.Mode = SPI_MODE_MASTER;
+    BmpHandle.spi.Init.Mode              = SPI_MODE_MASTER;
 
     if(HAL_SPI_Init(&BmpHandle.spi) != HAL_OK)
         error();
@@ -308,18 +299,10 @@ static void configure_spi()
     while (HAL_SPI_GetState(&BmpHandle.spi) != HAL_SPI_STATE_READY)
     {}
 
-    DEBUG_BLINK();
-
     bmp280_params_t params;
     bmp280_init_default_params(&params);
     if (!bmp280_init(&BmpHandle, &params))
         error();
-
-    DEBUG_BLINK();
-    DEBUG_BLINK();
-    DEBUG_BLINK();
-
-    error();
 }
 
 /**
@@ -390,13 +373,13 @@ static void broadcast()
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef* hspi)
 {
     // pull NSS down
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
+    /* HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET); */
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi)
 {
     // pull NSS up
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
+    /* HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET); */
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
@@ -437,4 +420,23 @@ void configure_adc()
         error();
 
     HAL_ADC_Start_IT(&AdcHandle);
+}
+
+HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    // TODO: get data from BSP
+    if (!bmp280_read_fixed(&BmpHandle, &temperature, &pressure, &humidity))
+        error();
+}
+
+static void configure_timer()
+{
+    TimHandle.Instance = TIMx;
+    TimHandle.Init.Prescaler = 40000;
+    TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    TimHandle.Init.Period = 500;
+    TimHandle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    TimHandle.Init.RepetitionCounter = 0;
+    HAL_TIM_Base_Init(&TimHandle);
+    HAL_TIM_Base_Start(&TimHandle);
 }

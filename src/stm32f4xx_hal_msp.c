@@ -58,6 +58,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
   SPIx_SCK_GPIO_CLK_ENABLE();
   SPIx_MISO_GPIO_CLK_ENABLE();
   SPIx_MOSI_GPIO_CLK_ENABLE();
+  /* SPIx_NSS_GPIO_CLK_ENABLE(); */
+
   /* Enable SPI clock */
   SPIx_CLK_ENABLE(); 
   
@@ -82,6 +84,12 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
   GPIO_InitStruct.Alternate = SPIx_MOSI_AF;
     
   HAL_GPIO_Init(SPIx_MOSI_GPIO_PORT, &GPIO_InitStruct);
+
+  /* SPI NSS GPIO pin configuration */
+/*   GPIO_InitStruct.Pin = SPIx_NSS_PIN;
+ *   GPIO_InitStruct.Alternate = SPIx_NSS_AF;
+ *
+ *   HAL_GPIO_Init(SPIx_NSS_GPIO_PORT, &GPIO_InitStruct); */
 
   /*##-3- Configure the NVIC for SPI #########################################*/
   /* NVIC for SPI */
@@ -122,7 +130,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(ADCx_CHANNEL_GPIO_PORT, &GPIO_InitStruct);
   
-  /*##-3- Disable the NVIC for ADC ###########################################*/
+  /*##-3- Enable the NVIC for ADC ###########################################*/
   HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);   
   HAL_NVIC_EnableIRQ(ADC_IRQn);
 }
@@ -140,4 +148,25 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *hadc)
     
   /*##-3- Disable the NVIC for ADC ###########################################*/
   HAL_NVIC_DisableIRQ(ADC_IRQn);
+}
+
+void HAL_TIM_MspInit(TIM_HandleTypeDef *htim)
+{
+  /*##-1- Enable peripherals and GPIO Clocks #################################*/
+  /* TIM3 Peripheral clock enable */
+  TIMx_CLK_ENABLE();
+
+  /*##-2- Enable the NVIC for TIM ###########################################*/
+  HAL_NVIC_SetPriority(TIMx_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(TIMx_IRQn);
+}
+
+void HAL_TIM_MspDeInit(TIM_HandleTypeDef *htim)
+{
+  /*##-1- Reset peripherals ##################################################*/
+  TIMx_FORCE_RESET();
+  TIMx_RELEASE_RESET();
+  
+  /*##-2- Disable the NVIC for ADC ###########################################*/
+  HAL_NVIC_DisableIRQ(TIMx_IRQn);
 }

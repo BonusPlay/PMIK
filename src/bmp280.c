@@ -38,14 +38,8 @@ static bool read_register16(BMP280_HandleTypedef* dev, uint8_t reg, uint16_t* va
     uint16_t tx_buff = (reg | 0x80);
     uint8_t rx_buff[2];
 
-    // pull NSS down
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
-
     // read
-    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(&dev->spi, &tx_buff, &rx_buff, sizeof(uint16_t), 1000);
-
-    // pull NSS up
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
+    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(&dev->spi, &tx_buff, (uint8_t*)rx_buff, sizeof(uint16_t), 1000);
 
     if (status == HAL_OK)
         *value = (uint16_t) ((rx_buff[1] << 8) | rx_buff[0]);
@@ -58,14 +52,8 @@ static bool read_data(BMP280_HandleTypedef* dev, uint8_t reg, uint8_t* value, ui
     // read, bit 7 high
     uint16_t tx_buff = (reg | 0x80);
 
-    // pull NSS down
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
-
     // read
-    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(&dev->spi, &tx_buff, value, len, 1000);
-
-    // pull NSS up
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
+    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive_IT(&dev->spi, (uint8_t*)tx_buff, value, len);
 
     return status == HAL_OK;
 }
@@ -116,14 +104,8 @@ static bool write_register8(BMP280_HandleTypedef* dev, uint8_t reg, uint8_t valu
     tx_buff[0] = (reg & ~0x80);
     tx_buff[1] = value;
 
-    // pull NSS down
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_RESET);
-
     // write
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(&dev->spi, &tx_buff, sizeof(tx_buff), 1000);
-
-    // pull NSS up
-    HAL_GPIO_WritePin(SPIx_NSS_GPIO_PORT, SPIx_NSS_PIN, GPIO_PIN_SET);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(&dev->spi, (uint8_t*)tx_buff, sizeof(tx_buff), 1000);
 
     return status == HAL_OK;
 }
@@ -148,7 +130,7 @@ bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params)
     DEBUG_BLINK();
 
     // Soft reset.
-    if (write_register8(dev, BMP280_REG_RESET, BMP280_RESET_VALUE)) {
+    if (!write_register8(dev, BMP280_REG_RESET, BMP280_RESET_VALUE)) {
         return false;
     }
 

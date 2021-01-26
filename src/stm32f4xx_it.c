@@ -5,6 +5,7 @@ extern HCD_HandleTypeDef hhcd;
 extern UART_HandleTypeDef UartHandle;
 extern BMP280_HandleTypedef BmpHandle;
 extern ADC_HandleTypeDef AdcHandle;
+extern TIM_HandleTypeDef TimHandle;
 
 void NMI_Handler(void)
 {}
@@ -151,4 +152,14 @@ void SPIx_IRQHandler(void)
 void ADC_IRQHandler(void)
 {
   HAL_ADC_IRQHandler(&AdcHandle);
+}
+
+/**
+  * @brief  This function handles TIMx global interrupt request.
+  * @param  None
+  * @retval None
+  */
+void TIMx_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&TimHandle);
 }

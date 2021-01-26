@@ -46,6 +46,7 @@
 #define SPIx_SCK_GPIO_CLK_ENABLE()       __HAL_RCC_GPIOE_CLK_ENABLE()
 #define SPIx_MISO_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOE_CLK_ENABLE() 
 #define SPIx_MOSI_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOE_CLK_ENABLE() 
+#define SPIx_NSS_GPIO_CLK_ENABLE()       __HAL_RCC_GPIOE_CLK_ENABLE()
 
 #define SPIx_FORCE_RESET()               __HAL_RCC_SPI4_FORCE_RESET()
 #define SPIx_RELEASE_RESET()             __HAL_RCC_SPI4_RELEASE_RESET()
@@ -61,7 +62,8 @@
 #define SPIx_MOSI_GPIO_PORT              GPIOE
 #define SPIx_MOSI_AF                     GPIO_AF5_SPI4
 #define SPIx_NSS_PIN                     GPIO_PIN_3
-#define SPIx_NSS_GPIO_PORT               GPIOE
+#define SPIx_NSS_GPIO_PORT               GPIOG
+#define SPIx_NSS_AF                      GPIO_AF5_SPI4
 
 /* Definition for SPIx's NVIC */
 #define SPIx_IRQn                        SPI4_IRQn
@@ -82,6 +84,18 @@
 /* Definition for ADCx's Channel */
 #define ADCx_CHANNEL                    ADC_CHANNEL_8
 
+/* Definition for TIMx clock resources */
+#define TIMx                           TIM7
+#define TIMx_CLK_ENABLE()              __HAL_RCC_TIM7_CLK_ENABLE()
+
+#define TIMx_FORCE_RESET()             __HAL_RCC_TIM7_FORCE_RESET()
+#define TIMx_RELEASE_RESET()           __HAL_RCC_TIM7_RELEASE_RESET()
+
+/* Definition for TIMx's NVIC */
+#define TIMx_IRQn                      TIM7_IRQn
+#define TIMx_IRQHandler                TIM7_IRQHandler
+
+/* debugging helper */
 #define DEBUG_BLINK() BSP_LED_On(LED3); HAL_Delay(100); BSP_LED_Off(LED3);
 
 uint16_t Calibration_GetX(uint16_t x);
